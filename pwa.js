@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const RELEASE='8.2.0',BUILD_ID='20260824-24',CORE_TIMEOUT_MS=12000;
+  const RELEASE='ARENA-EDU-CORE-3.1.0',BUILD_ID='20260824-25',CORE_TIMEOUT_MS=12000;
   let deferredPrompt=null,coreReady=false,coreFailed=false;
   const params=new URLSearchParams(location.search),bypassServiceWorker=params.get('bypassSW')==='1'||params.get('direct')==='1';
   const allowedHashes=new Set(['arena','zeus','wrongbook','subjects','solve','mock','progress','preference','membership']),pendingHash=allowedHashes.has(location.hash.replace('#',''))?location.hash.replace('#',''):'arena';

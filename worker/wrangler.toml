@@ -1,0 +1,13 @@
+name = "lgs-arena-edu-core-preview"
+main = "src/index.js"
+compatibility_date = "2026-08-24"
+workers_dev = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "CONFIGURE_BEFORE_DEPLOY"
+database_id = "CONFIGURE_BEFORE_DEPLOY"
+
+[[r2_buckets]]
+binding = "CONTENT"
+bucket_name = "configure-before-deploy"
