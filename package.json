@@ -1,0 +1,15 @@
+{
+  "name": "lgs-arena-cloudflare-security",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/cloudflare-*.test.mjs",
+    "test:baseline": "node tests/verify-premium-v61.js && node tests/verify-rewarded-v62.js && node tests/verify-v63.js",
+    "cf:check": "wrangler deploy --dry-run --config worker/wrangler.toml",
+    "cf:migrate:local": "wrangler d1 migrations apply lgs-arena-production --local --config worker/wrangler.toml",
+    "cf:migrate:remote": "wrangler d1 migrations apply lgs-arena-production --remote --config worker/wrangler.toml",
+    "cf:deploy": "wrangler deploy --config worker/wrangler.toml"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

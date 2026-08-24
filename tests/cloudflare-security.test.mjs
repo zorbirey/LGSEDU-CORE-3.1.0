@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DEVELOPMENT_ORIGINS,PRODUCTION_ORIGIN,hasPlan,isAllowedOrigin,quotaWindow,signSession,verifySession} from '../worker/src/security.mjs';
+
+test('CORS yalnız production ve açık local originleri kabul eder',()=>{assert.equal(isAllowedOrigin(PRODUCTION_ORIGIN),true);for(const origin of DEVELOPMENT_ORIGINS)assert.equal(isAllowedOrigin(origin),true);assert.equal(isAllowedOrigin('https://evil.example'),false);assert.equal(isAllowedOrigin('https://zorbirey.github.io.evil.example'),false)});
+test('plan sıralaması sunucu sözleşmesine uyar',()=>{assert.equal(hasPlan('free','premium'),false);assert.equal(hasPlan('premium','premium'),true);assert.equal(hasPlan('pro','premium'),true);assert.equal(hasPlan('pro_plus','pro'),true)});
+test('İstanbul kota penceresi 08.00 sınırında değişir',()=>{const before=quotaWindow(Date.parse('2026-08-24T04:59:59Z')),after=quotaWindow(Date.parse('2026-08-24T05:00:00Z'));assert.equal(before.key,'2026-08-23');assert.equal(after.key,'2026-08-24');assert.equal(before.resetAt,Math.floor(Date.parse('2026-08-24T05:00:00Z')/1000));assert.equal(after.resetAt,Math.floor(Date.parse('2026-08-25T05:00:00Z')/1000))});
+test('kısa oturum imzası doğrulanır, oynama ve süre aşımı reddedilir',async()=>{const secret='test-secret-never-production',now=1_800_000_000,claims={sid:'s1',uid:'u1',did:'d1',exp:now+900};const token=await signSession(claims,secret);assert.equal((await verifySession(token,secret,now)).uid,'u1');assert.equal(await verifySession(token+'x',secret,now),null);assert.equal(await verifySession(token,secret,now+901),null)});

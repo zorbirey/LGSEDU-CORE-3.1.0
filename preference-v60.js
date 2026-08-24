@@ -9,7 +9,7 @@
   function readJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch{return {}}}
   function readPreference(){const saved=readJson(PREF_KEY),arena=readJson(ARENA_KEY);return {province:saved.province||upperTr(arena.province||'İstanbul'),district:saved.district||'',score:saved.score||'',percentile:saved.percentile||'',y6:saved.y6||'',y7:saved.y7||'',y8:saved.y8||'',tab:saved.tab==='obp'?'obp':'exam'}}
   function savePreference(){try{localStorage.setItem(PREF_KEY,JSON.stringify(pref))}catch{}}
-  function isPremium(){if(window.LgsArenaPlans)return window.LgsArenaPlans.atLeast('premium');const state=readJson(ARENA_KEY),until=Date.parse(state.freePremiumUntil||'');return !!state.isPremium||(Number.isFinite(until)&&until>Date.now())}
+  function isPremium(){if(window.LgsArenaPlans)return window.LgsArenaPlans.atLeast('premium');return false}
   function isLocked(){if(window.LgsArenaAccess?.isLocked)return window.LgsArenaAccess.isLocked();const until=Date.parse(readJson(ARENA_KEY).freeLockUntil||'');return Number.isFinite(until)&&until>Date.now()&&!isPremium()}
   function openMembership(origin='progress'){
     const active=$('.page.active');if(active&&active.dataset.page!=='membership')previousPage=active.dataset.page||'progress';membershipOrigin=origin||'progress';

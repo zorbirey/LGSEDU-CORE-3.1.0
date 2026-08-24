@@ -1,0 +1,10 @@
+window.ARENA_SECURITY_CONFIG=Object.freeze({
+  standard:'ARENA-SECURITY-CORE-V1',
+  endpoint:'https://dry-hill-ab5b.zorbirey73.workers.dev',
+  turnstileWidget:'lgs-arena-pwa',
+  turnstileSiteKey:'0x4AAAAAAEagqaF_ktA10HS0',
+  productionOrigin:'https://zorbirey.github.io',
+  sessionStorage:'memory-only',
+  backendRequiredForProtectedAccess:true
+});
+if(window.ARENA_SECURITY_CONFIG.endpoint)window.ArenaSecurityV1?.configure({endpoint:window.ARENA_SECURITY_CONFIG.endpoint});
