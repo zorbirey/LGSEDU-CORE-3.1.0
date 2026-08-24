@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const index=fs.readFileSync('index.html','utf8'),serviceWorker=fs.readFileSync('service-worker.js','utf8'),plans=fs.readFileSync('plans-v80.js','utf8'),app=fs.readFileSync('app.js','utf8'),securityConfig=fs.readFileSync('arena-security.config.js','utf8'),turnstile=fs.readFileSync('arena-turnstile-v1.js','utf8'),workerSecurity=fs.readFileSync('worker/src/security.mjs','utf8');
+test('PWA build ve güvenlik modülleri hizalıdır',()=>{for(const file of [index,serviceWorker])assert.match(file,/20260824-26/);for(const module of ['cloudflare-security-v1.js','arena-security.config.js','arena-turnstile-v1.js'])assert.match(index,new RegExp(module.replace('.','\\.')));assert.match(serviceWorker,/arena-turnstile-v1\.js/)});
+test('feature cache yalnız kendi ailesini temizler ve API cachelemez',()=>{assert.match(serviceWorker,/CACHE_PREFIX='lgs-2027-arena-security-feature-'/);assert.match(serviceWorker,/key\.startsWith\(CACHE_PREFIX\)/);assert.match(serviceWorker,/protectedRequest/);assert.doesNotMatch(serviceWorker,/keys\.filter\(key=>key!==CACHE_NAME\)/)});
+test('localStorage planı ücretli yetki vermez',()=>{assert.match(plans,/ArenaSecurityV1\?\.atLeast/);assert.match(app,/function hasPremiumAccess\(\)\{return !!window\.LgsArenaPlans/);assert.doesNotMatch(app,/function hasPremiumAccess\(\)[\s\S]{0,220}state\.isPremium/)});
+test('Turnstile lazy yüklenir, action ve public yapılandırma doğrulanır',()=>{assert.match(securityConfig,/dry-hill-ab5b\.zorbirey73\.workers\.dev/);assert.match(securityConfig,/0x4AAAAAAEagqaF_ktA10HS0/);assert.match(turnstile,/render=explicit/);assert.match(turnstile,/action:'session_bootstrap'/);assert.match(workerSecurity,/result\.action!==['"]session_bootstrap['"]/);assert.doesNotMatch(turnstile,/sessionToken[\s\S]{0,100}localStorage\.setItem/)});
