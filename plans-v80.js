@@ -10,23 +10,25 @@
   function validPlan(value){return Object.prototype.hasOwnProperty.call(LEVELS,value)?value:null}
   function normalize(state=read()){
     const copy={...state},legacy=copy.isPremium===true;
-    copy.plan=validPlan(copy.plan)||(legacy?'premium':'free');
-    copy.isPremium=LEVELS[copy.plan]>=LEVELS.premium;
+    copy.demoPlan=validPlan(copy.demoPlan)||validPlan(copy.legacyPlanDemo)||validPlan(copy.plan)||(legacy?'premium':'free');
+    copy.plan='free';
+    copy.isPremium=false;
     return copy;
   }
   function persist(state){localStorage.setItem(ARENA_KEY,JSON.stringify(normalize(state)))}
-  function current(){return normalize().plan}
+  function current(){return 'free'}
+  function demoCurrent(){return normalize().demoPlan}
   function giftActive(){const state=read(),until=Date.parse(state.freePremiumUntil||''),clock=window.LgsArenaAccess;return state.freePremiumVerifiedByServer===true&&clock?.clockVerified?.()===true&&Number.isFinite(until)&&until>clock.trustedNow()}
-  function atLeast(plan){const active=giftActive()&&LEVELS[current()]<1?'premium':current();return LEVELS[active]>=LEVELS[plan]}
+  function atLeast(plan){return LEVELS.free>=LEVELS[plan]}
   function can(feature){const required=FEATURES[feature];return !!required&&atLeast(required)}
-  function setPlan(plan){if(!validPlan(plan)||plan==='pro_plus')return false;const state=normalize();state.plan=plan;state.isPremium=LEVELS[plan]>=1;persist(state);window.dispatchEvent(new CustomEvent('lgsarena:plan-changed',{detail:{plan,label:LABELS[plan]}}));return true}
+  function setPlan(plan){if(!validPlan(plan)||plan==='pro_plus')return false;const state=normalize();state.demoPlan=plan;state.plan='free';state.isPremium=false;persist(state);window.dispatchEvent(new CustomEvent('lgsarena:plan-changed',{detail:{plan,label:LABELS[plan]}}));return true}
   function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]))}
   function bytesToHex(buffer){return [...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,'0')).join('')}
   async function checksum(payload){if(!crypto?.subtle)return null;return bytesToHex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(payload)))}
   async function exportBackup(){
     if(!can('deviceTransfer'))return openUpgrade('device-transfer');
     const data={};[ARENA_KEY,PREFERENCE_KEY,PROFILE_KEY].forEach(key=>{const value=localStorage.getItem(key);if(value!==null)data[key]=value});
-    const payload=JSON.stringify(data),file={format:'LGS_ARENA_DEVICE_TRANSFER',schema:1,createdAt:new Date().toISOString(),buildId:'20260824-24',automaticSync:false,data,checksum:await checksum(payload)};
+    const payload=JSON.stringify(data),file={format:'LGS_ARENA_DEVICE_TRANSFER',schema:1,createdAt:new Date().toISOString(),buildId:'20260824-25',automaticSync:false,data,checksum:await checksum(payload)};
     const blob=new Blob([JSON.stringify(file,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`lgs-arena-yedek-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('Cihaz aktarım dosyası indirildi.');
   }
@@ -44,7 +46,7 @@
   function openUpgrade(origin='pro'){window.dispatchEvent(new CustomEvent('lgsarena:open-membership',{detail:{origin,focus:'pro'}}))}
   function toast(message){const el=document.getElementById('toast');if(!el)return;el.textContent=message;el.classList.remove('hidden');clearTimeout(window.__planToast);window.__planToast=setTimeout(()=>el.classList.add('hidden'),3500)}
   function refresh(){
-    const plan=current(),status=document.getElementById('membershipStatus');if(status){status.textContent=giftActive()&&plan==='free'?'HEDİYE PREMIUM':LABELS[plan].toLocaleUpperCase('tr-TR');status.classList.toggle('active',atLeast('premium'))}
+    const plan=demoCurrent(),status=document.getElementById('membershipStatus');if(status){status.textContent=giftActive()?'HEDİYE PREMIUM':LABELS[plan].toLocaleUpperCase('tr-TR')+' · DEMO';status.classList.toggle('active',atLeast('premium'))}
     document.querySelectorAll('[data-plan-demo]').forEach(button=>{const target=button.dataset.planDemo;button.classList.toggle('current',target===plan);button.textContent=target===plan?'BU PLAN AKTİF':`${LABELS[target].toLocaleUpperCase('tr-TR')} DEMOSUNU AÇ`});
     document.getElementById('membershipDisable')?.classList.toggle('hidden',plan==='free');
     document.querySelectorAll('[data-pro-cta]').forEach(button=>{const active=atLeast('pro');button.textContent=active?'SERVİS BAĞLANTISI BEKLENİYOR':'ARENA PRO’YU İNCELE';button.classList.toggle('is-active',active)});
@@ -56,6 +58,6 @@
     document.querySelectorAll('[data-pro-cta]').forEach(button=>button.addEventListener('click',()=>{if(!atLeast('pro'))openUpgrade(button.dataset.proCta)}));
     window.addEventListener('lgsarena:plan-changed',refresh);window.addEventListener('lgsarena:membership-refresh',refresh);window.addEventListener('lgsarena:premium-changed',refresh);window.addEventListener('lgsarena:access-updated',refresh);
   }
-  window.LgsArenaPlans=Object.freeze({current,label:()=>LABELS[current()],atLeast,can,setPlan,normalize,exportBackup,importBackup,features:FEATURES,automaticSync:false,syncMode:'manual-device-transfer',recommendedBackend:'firebase-spark'});
+  window.LgsArenaPlans=Object.freeze({current,demoCurrent,label:()=>LABELS[demoCurrent()]+' Demo',atLeast,can,setPlan,normalize,exportBackup,importBackup,features:FEATURES,automaticSync:false,syncMode:'manual-device-transfer',entitlementAuthority:'server-only',backendStatus:'not-configured',recommendedBackend:'cloudflare-free-tier'});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);else wire();
 })();
