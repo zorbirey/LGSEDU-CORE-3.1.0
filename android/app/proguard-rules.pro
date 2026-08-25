@@ -1,0 +1,3 @@
+-keepattributes *Annotation*
+-keep class com.google.android.gms.ads.** { *; }
+-dontwarn org.chromium.support_lib_boundary.**

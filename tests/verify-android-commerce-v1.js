@@ -1,0 +1,35 @@
+'use strict';
+const fs=require('fs');
+function read(path){return fs.readFileSync(path,'utf8')}
+function must(value,message){if(!value)throw new Error(message)}
+const gradle=read('android/app/build.gradle.kts');
+const manifest=read('android/app/src/main/AndroidManifest.xml');
+const activity=read('android/app/src/main/java/com/arenaedu/lgs2027/MainActivity.java');
+const billing=read('android/app/src/main/java/com/arenaedu/lgs2027/BillingController.java');
+const rewarded=read('android/app/src/main/java/com/arenaedu/lgs2027/RewardedAdController.java');
+const nativeBridge=read('arena-native-bridge-v1.js');
+const index=read('index.html');
+const sw=read('service-worker.js');
+const config=read('arena-core.config.js');
+const worker=read('server/wrangler.jsonc');
+must(gradle.includes('applicationId = "com.arenaedu.lgs2027"'),'canonical Android package missing');
+must(gradle.includes('compileSdk = 36')&&gradle.includes('targetSdk = 36'),'Android 16 SDK target missing');
+must(gradle.includes('arena_premium_monthly')&&gradle.includes('arena_pro_monthly'),'Play products missing from Android build');
+must(gradle.includes('ca-app-pub-3940256099942544/5224354917'),'official rewarded test ID missing');
+must(gradle.includes('Release için ARENA_ADMOB_APP_ID zorunludur.'),'release AdMob fail-closed guard missing');
+must(manifest.includes('android:usesCleartextTraffic="false"'),'cleartext traffic is not blocked');
+must(activity.includes('WebViewCompat.addWebMessageListener'),'origin-scoped WebView bridge missing');
+must(activity.includes('Collections.singleton(TRUSTED_ORIGIN)'),'trusted-origin allowlist missing');
+must(activity.includes('isMainFrame'),'main-frame validation missing');
+must(!activity.includes('addJavascriptInterface'),'legacy unsafe JS bridge must not be used');
+must(billing.includes('setObfuscatedAccountId(accountId)'),'purchase account binding missing');
+must(rewarded.includes('setServerSideVerificationOptions'),'AdMob SSV binding missing');
+must(nativeBridge.includes("const VERSION='ARENA-ANDROID-BRIDGE-1.0.0'"),'browser/native bridge version missing');
+must(index.indexOf('arena-native-bridge-v1.js?v=20260825-06')<index.indexOf('arena-commerce-v1.js?v=20260825-06'),'native bridge must load before commerce bridge');
+must(sw.includes("'./arena-native-bridge-v1.js'"),'native bridge missing from app shell');
+must(config.includes("packageName:'com.arenaedu.lgs2027'"),'web package binding missing');
+must(config.includes("premium:'arena_premium_monthly'")&&config.includes("pro:'arena_pro_monthly'"),'web product binding missing');
+must(worker.includes('"GOOGLE_PLAY_PACKAGE_NAME": "com.arenaedu.lgs2027"'),'server package binding missing');
+must(worker.includes('arena_premium_monthly')&&worker.includes('arena_pro_monthly'),'server product-plan mapping missing');
+must(worker.includes('"ADMOB_REWARD_AD_UNIT_ID": "not-configured"'),'production AdMob must remain fail closed until a real unit exists');
+console.log('ARENA-ANDROID-COMMERCE-1.0.0 verification passed');

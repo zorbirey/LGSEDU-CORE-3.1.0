@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "packageName": "{{ANDROID_PACKAGE_NAME}}",
+  "webAppUrl": "{{PWA_PRODUCTION_URL}}",
+  "googlePlay": {
+    "premiumProductId": "{{APP_SLUG}}_premium_monthly",
+    "proProductId": "{{APP_SLUG}}_pro_monthly",
+    "serverVerificationRequired": true
+  },
+  "adMob": {
+    "debugUsesOfficialGoogleTestIds": true,
+    "releaseAppId": "REQUIRED_OUTSIDE_GIT",
+    "releaseRewardedUnitId": "REQUIRED_OUTSIDE_GIT",
+    "rewardItem": "arena_continue",
+    "rewardAmount": 1,
+    "serverSideVerificationRequired": true
+  },
+  "releasePolicy": {
+    "failWhenProviderIdsMissing": true,
+    "neverGrantEntitlementLocally": true
+  }
+}
