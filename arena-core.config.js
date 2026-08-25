@@ -2,9 +2,10 @@ window.ARENA_CORE_CONFIG=Object.freeze({
   coreVersion:'ARENA-CORE-V1',
   appId:'lgs2027-arena',
   appName:'LGS 2027 Arena',
-  buildId:'20260825-04',
+  buildId:'20260825-05',
   storageNamespace:'lgs2027-arena:core:v1',
   security:Object.freeze({mode:'server-authority',apiBaseUrl:'https://dry-hill-ab5b.zorbirey73.workers.dev',allowLocalPlanSimulation:false,paidFeaturesRequireOnlineVerification:true,firebaseProjectId:'arena-edu-production'}),
+  commerce:Object.freeze({mode:'native-bridge-server-authority',nativeBridgeName:'ArenaNativeCommerce',googlePlay:Object.freeze({products:Object.freeze({premium:'not-configured',pro:'not-configured'})}),rewardedAds:Object.freeze({provider:'admob-signed-ssv',pollIntervalMs:1500})}),
   identity:Object.freeze({
     firebaseSdkVersion:'12.18.0',
     firebase:Object.freeze({apiKey:'AIzaSyDHe8fi82A-ELOwT1ygY9gIIXlJ8G-_fz8',authDomain:'arena-edu-production.firebaseapp.com',projectId:'arena-edu-production',storageBucket:'arena-edu-production.firebasestorage.app',messagingSenderId:'628565077184',appId:'1:628565077184:web:7001e83df91945aad49125'}),

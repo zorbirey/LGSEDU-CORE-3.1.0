@@ -27,7 +27,7 @@
   async function exportBackup(){
     if(!can('deviceTransfer'))return openUpgrade('device-transfer');
     const data={};[ARENA_KEY,PREFERENCE_KEY,PROFILE_KEY].forEach(key=>{const value=localStorage.getItem(key);if(value!==null)data[key]=value});
-    const payload=JSON.stringify(data),file={format:'LGS_ARENA_DEVICE_TRANSFER',schema:1,createdAt:new Date().toISOString(),buildId:'20260825-02',automaticSync:false,data,checksum:await checksum(payload)};
+    const payload=JSON.stringify(data),file={format:'LGS_ARENA_DEVICE_TRANSFER',schema:1,createdAt:new Date().toISOString(),buildId:'20260825-05',automaticSync:false,data,checksum:await checksum(payload)};
     const blob=new Blob([JSON.stringify(file,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`lgs-arena-yedek-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('Cihaz aktarım dosyası indirildi.');
   }
@@ -46,13 +46,10 @@
   function toast(message){const el=document.getElementById('toast');if(!el)return;el.textContent=message;el.classList.remove('hidden');clearTimeout(window.__planToast);window.__planToast=setTimeout(()=>el.classList.add('hidden'),3500)}
   function refresh(){
     const plan=current(),status=document.getElementById('membershipStatus');if(status){status.textContent=giftActive()&&plan==='free'?'HEDİYE PREMIUM':LABELS[plan].toLocaleUpperCase('tr-TR');status.classList.toggle('active',atLeast('premium'))}
-    document.querySelectorAll('[data-plan-demo]').forEach(button=>{const target=button.dataset.planDemo;button.classList.toggle('current',target===plan);button.textContent=target===plan?'BU PLAN AKTİF':`${LABELS[target].toLocaleUpperCase('tr-TR')} DEMOSUNU AÇ`});
-    document.getElementById('membershipDisable')?.classList.toggle('hidden',plan==='free');
     document.querySelectorAll('[data-pro-cta]').forEach(button=>{const active=atLeast('pro');button.textContent=active?'SERVİS BAĞLANTISI BEKLENİYOR':'ARENA PRO’YU İNCELE';button.classList.toggle('is-active',active)});
   }
   function wire(){
     const migrated=normalize();persist(migrated);refresh();
-    document.querySelectorAll('[data-plan-demo]').forEach(button=>button.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('lgsarena:select-plan',{detail:{plan:button.dataset.planDemo}}))));
     document.getElementById('deviceExport')?.addEventListener('click',exportBackup);document.getElementById('deviceImport')?.addEventListener('click',()=>document.getElementById('deviceImportFile')?.click());document.getElementById('deviceImportFile')?.addEventListener('change',event=>{const file=event.target.files?.[0];if(file)importBackup(file);event.target.value=''});
     document.querySelectorAll('[data-pro-cta]').forEach(button=>button.addEventListener('click',()=>{if(!atLeast('pro'))openUpgrade(button.dataset.proCta)}));
     window.addEventListener('lgsarena:plan-changed',refresh);window.addEventListener('lgsarena:membership-refresh',refresh);window.addEventListener('lgsarena:premium-changed',refresh);window.addEventListener('lgsarena:access-updated',refresh);window.addEventListener('arena:authority-updated',refresh);

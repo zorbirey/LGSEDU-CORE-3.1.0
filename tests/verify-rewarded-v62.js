@@ -1,4 +1,4 @@
 'use strict';
 const fs=require('fs'),assert=require('assert');
 const index=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('app.js','utf8'),core=fs.readFileSync('arena-core-v1.js','utf8');
-assert.match(core,/questionLimit:50/);assert.match(core,/rewardedAdLimit:6/);assert.match(core,/\[10,20,30,40\]/);assert.match(index,/id="adCancel"/);assert.match(index,/TEST REKLAMI · GELİR ÜRETMEZ/);assert.match(app,/completed<session\.questions\.length/);assert.match(app,/state\.daily\.count>=FREE_DAILY_LIMIT\)showQuestionQuotaGate/);assert.match(app,/state\.rewardDaily\.count>=6/);console.log('LGS rewarded standard OK');
+assert.match(core,/questionLimit:50/);assert.match(core,/rewardedAdLimit:6/);assert.match(core,/\[10,20,30,40\]/);assert.match(index,/id="adCancel"/);assert.doesNotMatch(index,/TEST REKLAMI · GELİR ÜRETMEZ/);assert.match(index,/GÜVENLİ ÖDÜLLÜ REKLAM/);assert.match(app,/completed<session\.questions\.length/);assert.match(app,/state\.daily\.count>=FREE_DAILY_LIMIT\)showQuestionQuotaGate/);assert.match(app,/state\.rewardDaily\.count>=6/);console.log('LGS rewarded standard OK');
