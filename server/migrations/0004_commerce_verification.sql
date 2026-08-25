@@ -57,7 +57,7 @@ BEGIN
      AND status='pending'
      AND expires_at>=NEW.provider_timestamp;
 
-  SELECT CASE WHEN changes()=0 THEN RAISE(ABORT,'invalid-reward-session') END;
+  SELECT (CASE WHEN changes()=0 THEN RAISE(ABORT,'invalid-reward-session') END);
 
   INSERT INTO daily_quotas (user_id,feature,window_key,used,limit_value,reset_at,updated_at)
   VALUES (NEW.user_id,'rewarded_ads',NEW.window_key,1,NEW.limit_value,NEW.reset_at,NEW.verified_at)
@@ -68,5 +68,5 @@ BEGIN
     updated_at=excluded.updated_at
   WHERE daily_quotas.used<excluded.limit_value;
 
-  SELECT CASE WHEN changes()=0 THEN RAISE(ABORT,'daily-reward-limit') END;
+  SELECT (CASE WHEN changes()=0 THEN RAISE(ABORT,'daily-reward-limit') END);
 END;
