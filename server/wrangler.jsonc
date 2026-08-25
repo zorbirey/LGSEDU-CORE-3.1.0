@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "arena-edu-authority",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ENVIRONMENT": "development",
+    "FIREBASE_PROJECT_ID": "arena-edu-production",
+    "ALLOWED_ORIGINS": "http://localhost:8788,http://127.0.0.1:8788",
+    "TURNSTILE_ENFORCE": "false"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lgs-arena-production",
+      "database_id": "0b75f27a-008a-4f06-863c-7bf8b836f830",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "env": {
+    "production": {
+      "name": "dry-hill-ab5b",
+      "vars": {
+        "ENVIRONMENT": "production",
+        "FIREBASE_PROJECT_ID": "arena-edu-production",
+        "ALLOWED_ORIGINS": "https://zorbirey.github.io",
+        "TURNSTILE_ENFORCE": "true"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "lgs-arena-production",
+          "database_id": "0b75f27a-008a-4f06-863c-7bf8b836f830",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}
