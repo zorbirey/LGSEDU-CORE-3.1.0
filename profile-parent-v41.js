@@ -6,7 +6,7 @@
   const $=s=>document.querySelector(s),byId=id=>document.getElementById(id);
   function readState(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}}
   function writeState(state){localStorage.setItem(KEY,JSON.stringify(state))}
-  function premium(){if(window.LgsArenaPlans)return window.LgsArenaPlans.atLeast('premium');const state=readState(),until=Date.parse(state.freePremiumUntil||'');return !!state.isPremium||(Number.isFinite(until)&&until>Date.now())}
+  function premium(){return !!window.LgsArenaPlans?.atLeast('premium')}
   function openMembership(){
     const cover=byId('cover'),shell=byId('shell');
     cover?.classList.remove('active');cover?.classList.add('hidden');shell?.classList.remove('hidden');

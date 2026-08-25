@@ -15,18 +15,19 @@
     return copy;
   }
   function persist(state){localStorage.setItem(ARENA_KEY,JSON.stringify(normalize(state)))}
-  function current(){return normalize().plan}
-  function giftActive(){const state=read(),until=Date.parse(state.freePremiumUntil||''),clock=window.LgsArenaAccess;return state.freePremiumVerifiedByServer===true&&clock?.clockVerified?.()===true&&Number.isFinite(until)&&until>clock.trustedNow()}
-  function atLeast(plan){const active=giftActive()&&LEVELS[current()]<1?'premium':current();return LEVELS[active]>=LEVELS[plan]}
+  function authority(){return window.ArenaSecureAuthority||null}
+  function current(){return authority()?.verified?.()?authority().current():'free'}
+  function giftActive(){return false}
+  function atLeast(plan){return authority()?.verified?.()===true&&authority().atLeast(plan)}
   function can(feature){const required=FEATURES[feature];return !!required&&atLeast(required)}
-  function setPlan(plan){if(!validPlan(plan)||plan==='pro_plus')return false;const state=normalize();state.plan=plan;state.isPremium=LEVELS[plan]>=1;persist(state);window.dispatchEvent(new CustomEvent('lgsarena:plan-changed',{detail:{plan,label:LABELS[plan]}}));return true}
+  function setPlan(plan){if(window.ARENA_CORE_CONFIG?.security?.allowLocalPlanSimulation!==true||!validPlan(plan)||plan==='pro_plus')return false;const state=normalize();state.plan=plan;state.isPremium=LEVELS[plan]>=1;persist(state);window.dispatchEvent(new CustomEvent('lgsarena:plan-changed',{detail:{plan,label:LABELS[plan]}}));return true}
   function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]))}
   function bytesToHex(buffer){return [...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,'0')).join('')}
   async function checksum(payload){if(!crypto?.subtle)return null;return bytesToHex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(payload)))}
   async function exportBackup(){
     if(!can('deviceTransfer'))return openUpgrade('device-transfer');
     const data={};[ARENA_KEY,PREFERENCE_KEY,PROFILE_KEY].forEach(key=>{const value=localStorage.getItem(key);if(value!==null)data[key]=value});
-    const payload=JSON.stringify(data),file={format:'LGS_ARENA_DEVICE_TRANSFER',schema:1,createdAt:new Date().toISOString(),buildId:'20260824-24',automaticSync:false,data,checksum:await checksum(payload)};
+    const payload=JSON.stringify(data),file={format:'LGS_ARENA_DEVICE_TRANSFER',schema:1,createdAt:new Date().toISOString(),buildId:'20260825-02',automaticSync:false,data,checksum:await checksum(payload)};
     const blob=new Blob([JSON.stringify(file,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`lgs-arena-yedek-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('Cihaz aktarım dosyası indirildi.');
   }
@@ -54,8 +55,8 @@
     document.querySelectorAll('[data-plan-demo]').forEach(button=>button.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('lgsarena:select-plan',{detail:{plan:button.dataset.planDemo}}))));
     document.getElementById('deviceExport')?.addEventListener('click',exportBackup);document.getElementById('deviceImport')?.addEventListener('click',()=>document.getElementById('deviceImportFile')?.click());document.getElementById('deviceImportFile')?.addEventListener('change',event=>{const file=event.target.files?.[0];if(file)importBackup(file);event.target.value=''});
     document.querySelectorAll('[data-pro-cta]').forEach(button=>button.addEventListener('click',()=>{if(!atLeast('pro'))openUpgrade(button.dataset.proCta)}));
-    window.addEventListener('lgsarena:plan-changed',refresh);window.addEventListener('lgsarena:membership-refresh',refresh);window.addEventListener('lgsarena:premium-changed',refresh);window.addEventListener('lgsarena:access-updated',refresh);
+    window.addEventListener('lgsarena:plan-changed',refresh);window.addEventListener('lgsarena:membership-refresh',refresh);window.addEventListener('lgsarena:premium-changed',refresh);window.addEventListener('lgsarena:access-updated',refresh);window.addEventListener('arena:authority-updated',refresh);
   }
-  window.LgsArenaPlans=Object.freeze({current,label:()=>LABELS[current()],atLeast,can,setPlan,normalize,exportBackup,importBackup,features:FEATURES,automaticSync:false,syncMode:'manual-device-transfer',recommendedBackend:'firebase-spark'});
+  window.LgsArenaPlans=Object.freeze({current,label:()=>LABELS[current()],atLeast,can,setPlan,normalize,exportBackup,importBackup,features:FEATURES,automaticSync:false,syncMode:'manual-device-transfer',recommendedBackend:'firebase-auth-cloudflare-d1',authority:'ARENA-SERVER-AUTHORITY-V1'});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);else wire();
 })();

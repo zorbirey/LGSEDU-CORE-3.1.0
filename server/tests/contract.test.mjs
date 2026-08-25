@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import test from 'node:test';
+const worker=readFileSync(new URL('../src/index.ts',import.meta.url),'utf8');
+const migration=readFileSync(new URL('../migrations/0003_authority_requests.sql',import.meta.url),'utf8');
+test('Firebase tokens are verified against project audience and issuer',()=>{assert.match(worker,/jwtVerify/);assert.match(worker,/audience:env\.FIREBASE_PROJECT_ID/);assert.match(worker,/securetoken\.google\.com/);assert.match(worker,/email_verified!==true/)});
+test('existing production identity, entitlement and quota schema is reused',()=>{assert.match(worker,/INSERT INTO users/);assert.match(worker,/FROM entitlements/);assert.match(worker,/INSERT INTO daily_quotas/);assert.match(worker,/daily-question-limit/)});
+test('idempotency is persisted before atomic quota mutation',()=>{assert.match(migration,/CREATE TABLE IF NOT EXISTS authority_requests/);assert.match(worker,/status='pending'/);assert.ok(worker.indexOf('INSERT INTO authority_requests')<worker.indexOf('INSERT INTO daily_quotas'))});
+test('Turnstile is server validated and hostname bound',()=>{assert.match(worker,/turnstile\/v0\/siteverify/);assert.match(worker,/TURNSTILE_SECRET_KEY/);assert.match(worker,/turnstile-hostname-rejected/);assert.doesNotMatch(worker,/0x4AAAAA[A-Za-z0-9_-]{20,}/)});
+test('production errors do not disclose internals',()=>{assert.match(worker,/origin-not-allowed/);assert.match(worker,/requestId/);assert.doesNotMatch(worker,/error\.stack/)});
