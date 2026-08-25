@@ -1,7 +1,8 @@
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
+import {CommerceError, commerceStatus, createRewardSession, googlePlayAccountBinding, rewardSessionStatus, verifyAdMobCallback, verifyGooglePlaySubscription, type CommerceEnv} from './commerce';
 
 type Plan = 'free' | 'premium' | 'pro' | 'pro_plus';
-interface Env { DB: D1Database; ENVIRONMENT: string; FIREBASE_PROJECT_ID: string; ALLOWED_ORIGINS: string; TURNSTILE_ENFORCE: string; TURNSTILE_SECRET_KEY?: string }
+type WorkerEnv=CommerceEnv&{TURNSTILE_SECRET_KEY?:string};
 interface FirebaseClaims extends JWTPayload { email_verified?: boolean }
 interface EntitlementRow { plan: Plan; source: string; ends_at: number | null; created_at: number }
 interface QuotaRow { feature: string; used: number }
@@ -18,7 +19,7 @@ const PLAN_LIMITS=Object.freeze({
 const JSON_HEADERS=Object.freeze({'content-type':'application/json; charset=utf-8'});
 
 export default {
-  async fetch(request:Request,env:Env):Promise<Response>{
+  async fetch(request:Request,env:WorkerEnv):Promise<Response>{
     const requestId=request.headers.get('cf-ray')||crypto.randomUUID();
     const origin=request.headers.get('origin');
     const cors=corsHeaders(origin,env);
@@ -31,6 +32,10 @@ export default {
         await requireTurnstile(request,env);
         return json({ok:true,verified:true,serverAt:Date.now()},200,cors);
       }
+      if(request.method==='GET'&&url.pathname==='/v1/ads/admob/ssv'){
+        await verifyAdMobCallback(request,env.DB,env,quotaWindow,PLAN_LIMITS.free.rewardedAds);
+        return new Response(null,{status:204,headers:cors});
+      }
       const claims=await authenticate(request,env);
       const userId=claims.sub as string;
       if(request.method==='POST'&&url.pathname==='/v1/session/bootstrap'){
@@ -41,26 +46,39 @@ export default {
       }
       await requireActiveUser(env.DB,userId);
       if(request.method==='GET'&&url.pathname==='/v1/session')return json(await sessionSnapshot(env.DB,userId),200,cors);
+      if(request.method==='GET'&&url.pathname==='/v1/commerce/status')return json(commerceStatus(env),200,cors);
+      if(request.method==='GET'&&url.pathname==='/v1/payments/google-play/account-binding')return json({ok:true,accountBinding:await googlePlayAccountBinding(userId),serverAt:Date.now()},200,cors);
+      if(request.method==='POST'&&url.pathname==='/v1/payments/google-play/subscription/verify'){
+        const body=await readJson(request);
+        const verification=await verifyGooglePlaySubscription(env.DB,env,userId,body);
+        return json({...verification,session:await sessionSnapshot(env.DB,userId)},200,cors);
+      }
+      if(request.method==='POST'&&url.pathname==='/v1/ads/rewarded/session'){
+        const now=Date.now(),window=quotaWindow(now),row=await entitlement(env.DB,userId,now),plan=effectivePlan(row),usage=await quotaUsage(env.DB,userId,window.key),limit=PLAN_LIMITS[plan].rewardedAds;
+        return json(await createRewardSession(env.DB,env,userId,window,usage.rewardedAds,limit),201,cors);
+      }
+      const rewardStatus=/^\/v1\/ads\/rewarded\/session\/([0-9a-f-]{36})$/i.exec(url.pathname);
+      if(request.method==='GET'&&rewardStatus)return json(await rewardSessionStatus(env.DB,userId,rewardStatus[1]),200,cors);
       if(request.method==='POST'&&url.pathname==='/v1/usage/questions/reserve'){
         const body=await readJson(request);
         const amount=integerInRange(body.count,1,90,'invalid-question-count');
         const idempotencyKey=validIdempotencyKey(body.idempotencyKey);
         return json(await reserveQuestions(env.DB,userId,amount,idempotencyKey),200,cors);
       }
-      if(request.method==='POST'&&url.pathname==='/v1/usage/rewarded/claim')throw new ApiError(501,'reward-provider-verification-not-configured');
+      if(request.method==='POST'&&url.pathname==='/v1/usage/rewarded/claim')throw new ApiError(410,'signed-reward-session-required');
       throw new ApiError(404,'not-found');
     }catch(error){
-      const apiError=error instanceof ApiError?error:new ApiError(500,'internal-error');
+      const apiError=error instanceof ApiError||error instanceof CommerceError?error:new ApiError(500,'internal-error');
       console.error(JSON.stringify({level:'error',requestId,code:apiError.code,status:apiError.status}));
       return json({ok:false,error:apiError.code,requestId},apiError.status,cors);
     }
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler<WorkerEnv>;
 
 class ApiError extends Error{constructor(public readonly status:number,public readonly code:string){super(code)}}
-function allowedOrigins(env:Env):string[]{return env.ALLOWED_ORIGINS.split(',').map(value=>value.trim()).filter(Boolean)}
-function corsAllowed(origin:string|null,env:Env):boolean{return origin===null||allowedOrigins(env).includes(origin)}
-function corsHeaders(origin:string|null,env:Env):HeadersInit{
+function allowedOrigins(env:WorkerEnv):string[]{return env.ALLOWED_ORIGINS.split(',').map(value=>value.trim()).filter(Boolean)}
+function corsAllowed(origin:string|null,env:WorkerEnv):boolean{return origin===null||allowedOrigins(env).includes(origin)}
+function corsHeaders(origin:string|null,env:WorkerEnv):HeadersInit{
   const headers:Record<string,string>={
     'access-control-allow-headers':'authorization, content-type, idempotency-key, x-turnstile-token',
     'access-control-allow-methods':'GET, POST, OPTIONS','access-control-max-age':'86400','cache-control':'no-store',
@@ -71,7 +89,7 @@ function corsHeaders(origin:string|null,env:Env):HeadersInit{
 }
 function json(value:unknown,status:number,extra:HeadersInit={}):Response{return new Response(JSON.stringify(value),{status,headers:{...JSON_HEADERS,...extra}})}
 
-async function authenticate(request:Request,env:Env):Promise<FirebaseClaims>{
+async function authenticate(request:Request,env:WorkerEnv):Promise<FirebaseClaims>{
   const match=/^Bearer ([A-Za-z0-9._~-]+)$/.exec(request.headers.get('authorization')||'');
   if(!match)throw new ApiError(401,'authentication-required');
   try{
@@ -82,7 +100,7 @@ async function authenticate(request:Request,env:Env):Promise<FirebaseClaims>{
   }catch(error){if(error instanceof ApiError)throw error;throw new ApiError(401,'invalid-authentication')}
 }
 
-async function requireTurnstile(request:Request,env:Env):Promise<void>{
+async function requireTurnstile(request:Request,env:WorkerEnv):Promise<void>{
   if(env.TURNSTILE_ENFORCE!=='true')return;
   if(!env.TURNSTILE_SECRET_KEY)throw new ApiError(503,'turnstile-not-configured');
   const token=request.headers.get('x-turnstile-token')||'';

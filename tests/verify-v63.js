@@ -9,5 +9,7 @@ assert.match(authority,/ARENA-SERVER-AUTHORITY-V1/);
 assert.equal((pwa.match(/serviceWorker\.register/g)||[]).length,1);
 assert.doesNotMatch(pwa,/controllerchange[\s\S]{0,200}location\.reload/);
 assert.match(sw,/ARENA_SW_READY/);
-assert.match(sw,/20260825-02/);
+const buildId=/BUILD_ID='([^']+)'/.exec(pwa)?.[1];
+assert.ok(buildId,'PWA build ID missing');
+assert.ok(sw.includes(buildId),'service worker and PWA build IDs differ');
 console.log('LGS server-authority security/PWA standard OK');
