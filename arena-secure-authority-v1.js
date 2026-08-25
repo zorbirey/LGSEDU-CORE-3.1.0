@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const VERSION='ARENA-SERVER-AUTHORITY-CLIENT-V1';
+  const VERSION='ARENA-VERIFICATION-AUTHORITY-CLIENT-1.0.0';
   const LEVELS=Object.freeze({free:0,premium:1,pro:2,pro_plus:3});
   const config=window.ARENA_CORE_CONFIG?.security||{};
   let tokenProvider=null,turnstileProvider=null,snapshot=null,refreshPromise=null;
@@ -32,6 +32,23 @@
     if(value.ok)accept({...snapshot,...value,authority:'ARENA-SERVER-AUTHORITY-V1'});
     return value;
   }
-  Object.defineProperty(window,'ArenaSecureAuthority',{value:Object.freeze({VERSION,configured,authenticated,verified,current,atLeast,setTokenProvider,setTurnstileProvider,refresh,bootstrap,reserveQuestions,snapshot:()=>snapshot}),configurable:false,writable:false});
+  async function commerceStatus(){return request('/v1/commerce/status')}
+  async function googlePlayAccountBinding(){return request('/v1/payments/google-play/account-binding')}
+  async function verifyGooglePlaySubscription(productId,purchaseToken){
+    const value=await request('/v1/payments/google-play/subscription/verify',{method:'POST',body:JSON.stringify({productId,purchaseToken})});
+    if(value.session)accept(value.session);
+    return value;
+  }
+  async function createRewardSession(){return request('/v1/ads/rewarded/session',{method:'POST',body:'{}'})}
+  async function rewardSessionStatus(sessionId){
+    if(!/^[0-9a-f-]{36}$/i.test(String(sessionId||'')))throw new Error('invalid-reward-session');
+    const value=await request(`/v1/ads/rewarded/session/${encodeURIComponent(sessionId)}`);
+    if(value.verified)await refresh();
+    return value;
+  }
+  Object.defineProperty(window,'ArenaSecureAuthority',{value:Object.freeze({
+    VERSION,configured,authenticated,verified,current,atLeast,setTokenProvider,setTurnstileProvider,refresh,bootstrap,reserveQuestions,
+    commerceStatus,googlePlayAccountBinding,verifyGooglePlaySubscription,createRewardSession,rewardSessionStatus,snapshot:()=>snapshot,
+  }),configurable:false,writable:false});
   window.dispatchEvent(new CustomEvent('arena:authority-ready',{detail:{version:VERSION,configured:configured()}}));
 })();
