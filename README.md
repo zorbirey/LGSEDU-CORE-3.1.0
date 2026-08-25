@@ -39,3 +39,5 @@ Son yayın tetikleme: 20 Ağustos 2026 21:50 (TR)
 ## Görsel paket standardı
 
 Yeni Arena EDU projeleri ikon, açılış, ilk kullanım ve uygulama içi Zeus görsellerini tek paket olarak üretir. Kullanıcı onayından sonra görsel yön kilitlenir ve açık kullanıcı talebi olmadan değiştirilmez. Ayrıntılar `docs/ARENA-VISUAL-PACK-V1.md` dosyasındadır.
+
+Tam LGS 2027 STORM görsel paketi `assets/visual-packs/lgs2027-storm-v1/visual-pack.json` altında `approved-locked` olarak kayıtlıdır. Çekirdek sürümü: `ARENA-EDU-CORE-3.3.0`.

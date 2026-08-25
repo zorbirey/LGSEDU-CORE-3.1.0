@@ -5,9 +5,10 @@ const manifestPath=path.join('assets','visual-packs','lgs2027-storm-v1','visual-
 const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
 const validation=standard.validateManifest(manifest);
 assert.equal(validation.ok,true,validation.errors.join('\n'));
-assert.equal(manifest.packageStatus,'in-progress');
+assert.equal(manifest.packageStatus,'approved-locked');
 assert.equal(manifest.styleApproval.status,'approved-locked');
 assert.equal(manifest.styleApproval.changePolicy,'user-request-required');
+assert.deepEqual(new Set(manifest.assets.map(asset=>asset.role)),new Set(standard.REQUIRED_ROLES));
 for(const asset of manifest.assets){
   assert.ok(fs.existsSync(asset.path),`asset eksik: ${asset.path}`);
   const bytes=fs.readFileSync(asset.path);
@@ -16,9 +17,18 @@ for(const asset of manifest.assets){
   assert.equal(bytes.readUInt32BE(16),asset.width,`genişlik uyuşmuyor: ${asset.path}`);
   assert.equal(bytes.readUInt32BE(20),asset.height,`yükseklik uyuşmuyor: ${asset.path}`);
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),asset.sha256,`sha256 uyuşmuyor: ${asset.path}`);
+  if(asset.role.startsWith('zeus.')){
+    assert.equal(asset.transparentAlpha,true,`saydamlık beyanı eksik: ${asset.role}`);
+    assert.equal(bytes[25],6,`Zeus PNG RGBA olmalı: ${asset.path}`);
+  }
 }
-const approved={...manifest,packageStatus:'approved-locked'};
-const approvedValidation=standard.validateManifest(approved);
-assert.equal(approvedValidation.ok,false,'Eksik zorunlu roller varken paket kilitlenmemeli');
-assert.ok(approvedValidation.errors.some(error=>error.startsWith('zorunlu asset eksik:')));
-console.log('ARENA-VISUAL-PACK-V1 standard and LGS2027 STORM assets OK');
+for(const [role,size] of [['icon.pwa192',192],['icon.maskable192',192],['icon.pwa512',512],['icon.maskable512',512]]){
+  const asset=manifest.assets.find(item=>item.role===role);
+  assert.equal(asset.width,size,`${role} genişliği yanlış`);
+  assert.equal(asset.height,size,`${role} yüksekliği yanlış`);
+}
+const incomplete={...manifest,assets:manifest.assets.filter(asset=>asset.role!=='zeus.analysis')};
+const incompleteValidation=standard.validateManifest(incomplete);
+assert.equal(incompleteValidation.ok,false,'Eksik zorunlu rol varken paket kilitlenmemeli');
+assert.ok(incompleteValidation.errors.includes('zorunlu asset eksik: zeus.analysis'));
+console.log('ARENA-VISUAL-PACK-V1 and complete LGS2027 STORM pack OK');

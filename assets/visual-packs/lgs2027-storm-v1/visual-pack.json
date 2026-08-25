@@ -2,11 +2,21 @@
   "standard": "ARENA-VISUAL-PACK-V1",
   "packId": "lgs2027-storm-v1",
   "appId": "lgs2027-arena",
-  "packageStatus": "in-progress",
+  "packageStatus": "approved-locked",
   "style": {
     "name": "STORM / Şimşekli Gökyüzü",
-    "palette": ["#020914", "#07182b", "#175cff", "#dcecff", "#e7b85b"],
-    "typography": ["Georgia", "Arial", "sans-serif"],
+    "palette": [
+      "#020914",
+      "#07182b",
+      "#175cff",
+      "#dcecff",
+      "#e7b85b"
+    ],
+    "typography": [
+      "Georgia",
+      "Arial",
+      "sans-serif"
+    ],
     "safeAreaNotes": "Dikey görünümde alt yüzde 32 kontrol alanıdır. Yatay görünümde sağ yüzde 38 kontrol alanıdır."
   },
   "styleApproval": {
@@ -16,6 +26,70 @@
     "changePolicy": "user-request-required"
   },
   "assets": [
+    {
+      "role": "icon.master",
+      "path": "assets/visual-packs/lgs2027-storm-v1/icon-storm-master-v1.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 2300333,
+      "sha256": "d3c7cac1bee2212da6982f7633f5fb1d18e55ac91a9714e63dcf6077e720e72a"
+    },
+    {
+      "role": "icon.pwa192",
+      "path": "assets/visual-packs/lgs2027-storm-v1/icon-storm-pwa-192-v1.png",
+      "width": 192,
+      "height": 192,
+      "bytes": 73325,
+      "sha256": "20ab970bad2641931f96c7f24f9180b28bf4e36d036bfeba3cfba33441a73010"
+    },
+    {
+      "role": "icon.pwa512",
+      "path": "assets/visual-packs/lgs2027-storm-v1/icon-storm-pwa-512-v1.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 431689,
+      "sha256": "73eb387f2f2ba04d7944496b6345e0bdc968bf8fe28f4b6a90b0c4970f4e92a9"
+    },
+    {
+      "role": "icon.maskable192",
+      "path": "assets/visual-packs/lgs2027-storm-v1/icon-storm-maskable-192-v1.png",
+      "width": 192,
+      "height": 192,
+      "bytes": 47683,
+      "sha256": "987f73d0463764da8b2adc06f5ce34e8d627305dcf8b09da822db56e495c1005"
+    },
+    {
+      "role": "icon.maskable512",
+      "path": "assets/visual-packs/lgs2027-storm-v1/icon-storm-maskable-512-v1.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 279090,
+      "sha256": "aa88b66dd6424c7cd308e98361b2e1194a45d50a05b0240fc95a52d474acf06a"
+    },
+    {
+      "role": "launch.phonePortrait",
+      "path": "assets/visual-packs/lgs2027-storm-v1/launch-storm-portrait-v1.png",
+      "width": 941,
+      "height": 1672,
+      "bytes": 2183770,
+      "sha256": "161f3bf4878718a7792682399d3dc52ee78934e78e1efc096f574ac48efa0aa3"
+    },
+    {
+      "role": "launch.tabletPortrait",
+      "path": "assets/visual-packs/lgs2027-storm-v1/launch-storm-portrait-v1.png",
+      "width": 941,
+      "height": 1672,
+      "bytes": 2183770,
+      "sha256": "161f3bf4878718a7792682399d3dc52ee78934e78e1efc096f574ac48efa0aa3"
+    },
+    {
+      "role": "launch.tabletLandscape",
+      "path": "assets/visual-packs/lgs2027-storm-v1/launch-storm-landscape-v1.png",
+      "width": 1586,
+      "height": 992,
+      "bytes": 2003836,
+      "sha256": "2b39c47187e80658255c0ad59465f0f6774c9b4aa300dff3f50f6473b98473df"
+    },
     {
       "role": "firstUse.phonePortrait",
       "path": "assets/visual-packs/lgs2027-storm-v1/first-use-storm-portrait-v1.png",
@@ -39,6 +113,51 @@
       "height": 992,
       "bytes": 1941658,
       "sha256": "7cafd47e16f63e132eb701e516b977406926cd35aff6fba4b3de7c1cc4468fec"
+    },
+    {
+      "role": "zeus.coach",
+      "path": "assets/visual-packs/lgs2027-storm-v1/zeus-coach-storm-v1.png",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 3108895,
+      "sha256": "a74dd7247299cfc1e41273f5ed816dc4d40b3f4a4d2b5c73825c70837fb7c272",
+      "transparentAlpha": true
+    },
+    {
+      "role": "zeus.thinking",
+      "path": "assets/visual-packs/lgs2027-storm-v1/zeus-thinking-storm-v1.png",
+      "width": 1145,
+      "height": 1374,
+      "bytes": 2776149,
+      "sha256": "5a917f38e907e336619418bbd44809b1275e8e5a60c0291d5f27a4029c5bd8a3",
+      "transparentAlpha": true
+    },
+    {
+      "role": "zeus.warning",
+      "path": "assets/visual-packs/lgs2027-storm-v1/zeus-warning-storm-v1.png",
+      "width": 1199,
+      "height": 1312,
+      "bytes": 2719538,
+      "sha256": "6822b40fdb365b57472bb934c78bcb4eca2277a115490a32b03df38b8cb2df5c",
+      "transparentAlpha": true
+    },
+    {
+      "role": "zeus.celebrating",
+      "path": "assets/visual-packs/lgs2027-storm-v1/zeus-celebrating-storm-v1.png",
+      "width": 1221,
+      "height": 1289,
+      "bytes": 1978462,
+      "sha256": "609727d761c0cbba79e43dc30ebaeb9199be5484418e6413580428488d558c8e",
+      "transparentAlpha": true
+    },
+    {
+      "role": "zeus.analysis",
+      "path": "assets/visual-packs/lgs2027-storm-v1/zeus-analysis-storm-v1.png",
+      "width": 1186,
+      "height": 1327,
+      "bytes": 2655218,
+      "sha256": "40054e5d5d6921e9e2cb2a11a0c09bedf8169b55f752a374fcad34e36e6326cb",
+      "transparentAlpha": true
     }
   ]
 }
