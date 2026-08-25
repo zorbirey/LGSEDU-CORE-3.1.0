@@ -27,6 +27,10 @@ export default {
       const url=new URL(request.url);
       if(request.method==='GET'&&url.pathname==='/v1/health')return json({ok:true,service:'ARENA-SERVER-AUTHORITY-V1',serverAt:Date.now()},200,cors);
       if(!corsAllowed(origin,env))throw new ApiError(403,'origin-not-allowed');
+      if(request.method==='POST'&&url.pathname==='/v1/security/turnstile/verify'){
+        await requireTurnstile(request,env);
+        return json({ok:true,verified:true,serverAt:Date.now()},200,cors);
+      }
       const claims=await authenticate(request,env);
       const userId=claims.sub as string;
       if(request.method==='POST'&&url.pathname==='/v1/session/bootstrap'){
