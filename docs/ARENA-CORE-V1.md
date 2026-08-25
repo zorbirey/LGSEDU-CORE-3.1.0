@@ -9,6 +9,7 @@ Bu proje Arena ortak çekirdeğinin `ARENA-CORE-V1` sürümünü kullanır.
 - Günlük açılış: Türkiye saatiyle 08.00
 - AI alt sözleşmesi: `ARENA-AI-TEACHER-V1`, canlı sunucu bağlanana kadar kapalı
 - PWA: tek service worker, zorunlu etkinleşme yenilemesi yok
+- Görsel alt sözleşme: `ARENA-VISUAL-PACK-V1`; toplu üretim, kullanıcı onayı, sürümlü yerel varlıklar ve onay sonrası değişiklik kilidi
 
 Mevcut `lgsArenaPwaV02` verisi korunur. Yeni ortak özellikler ayrı
 `lgs2027-arena:core:v1:*` anahtarlarında saklanır.

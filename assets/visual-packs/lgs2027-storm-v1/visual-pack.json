@@ -1,0 +1,44 @@
+{
+  "standard": "ARENA-VISUAL-PACK-V1",
+  "packId": "lgs2027-storm-v1",
+  "appId": "lgs2027-arena",
+  "packageStatus": "in-progress",
+  "style": {
+    "name": "STORM / Şimşekli Gökyüzü",
+    "palette": ["#020914", "#07182b", "#175cff", "#dcecff", "#e7b85b"],
+    "typography": ["Georgia", "Arial", "sans-serif"],
+    "safeAreaNotes": "Dikey görünümde alt yüzde 32 kontrol alanıdır. Yatay görünümde sağ yüzde 38 kontrol alanıdır."
+  },
+  "styleApproval": {
+    "status": "approved-locked",
+    "userApproved": true,
+    "approvedAt": "2026-08-25",
+    "changePolicy": "user-request-required"
+  },
+  "assets": [
+    {
+      "role": "firstUse.phonePortrait",
+      "path": "assets/visual-packs/lgs2027-storm-v1/first-use-storm-portrait-v1.png",
+      "width": 941,
+      "height": 1672,
+      "bytes": 1854228,
+      "sha256": "3e940d7865634da1b978ff5cc101b437bdf5ce16621db62f72da98f223bf2982"
+    },
+    {
+      "role": "firstUse.tabletPortrait",
+      "path": "assets/visual-packs/lgs2027-storm-v1/first-use-storm-portrait-v1.png",
+      "width": 941,
+      "height": 1672,
+      "bytes": 1854228,
+      "sha256": "3e940d7865634da1b978ff5cc101b437bdf5ce16621db62f72da98f223bf2982"
+    },
+    {
+      "role": "firstUse.tabletLandscape",
+      "path": "assets/visual-packs/lgs2027-storm-v1/first-use-storm-landscape-v1.png",
+      "width": 1586,
+      "height": 992,
+      "bytes": 1941658,
+      "sha256": "7cafd47e16f63e132eb701e516b977406926cd35aff6fba4b3de7c1cc4468fec"
+    }
+  ]
+}

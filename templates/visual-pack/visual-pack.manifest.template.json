@@ -1,0 +1,19 @@
+{
+  "standard": "ARENA-VISUAL-PACK-V1",
+  "packId": "project-visual-style-v1",
+  "appId": "replace-with-app-id",
+  "packageStatus": "in-progress",
+  "style": {
+    "name": "replace-with-approved-style-name",
+    "palette": [],
+    "typography": [],
+    "safeAreaNotes": "Keep important subjects clear of responsive crop and system UI areas."
+  },
+  "styleApproval": {
+    "status": "approved-locked",
+    "userApproved": true,
+    "approvedAt": "YYYY-MM-DD",
+    "changePolicy": "user-request-required"
+  },
+  "assets": []
+}

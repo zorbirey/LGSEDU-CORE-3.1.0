@@ -36,3 +36,6 @@ Aktif yıl ve sınav tarihi `app.js` içindeki `CONFIG` alanından yönetilir. B
 `feature/pwa-live-demo` dalına yapılan her push, GitHub Actions üzerinden GitHub Pages yayını tetikler.
 
 Son yayın tetikleme: 20 Ağustos 2026 21:50 (TR)
+## Görsel paket standardı
+
+Yeni Arena EDU projeleri ikon, açılış, ilk kullanım ve uygulama içi Zeus görsellerini tek paket olarak üretir. Kullanıcı onayından sonra görsel yön kilitlenir ve açık kullanıcı talebi olmadan değiştirilmez. Ayrıntılar `docs/ARENA-VISUAL-PACK-V1.md` dosyasındadır.
