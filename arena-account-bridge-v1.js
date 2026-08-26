@@ -23,6 +23,8 @@
   function remember(mode){try{localStorage.setItem(ENTRY_KEY,mode)}catch{}}
   function remembered(){try{return localStorage.getItem(ENTRY_KEY)||''}catch{return ''}}
   function userVerified(user=currentUser){return !!user&&user.emailVerified===true}
+  function userAnonymous(user=currentUser){return !!user&&user.isAnonymous===true}
+  function authorityEligible(user=currentUser){return userVerified(user)||userAnonymous(user)}
   function requiresFirstUse(){return !remembered()}
   function emitIdentity(){window.dispatchEvent(new CustomEvent('arena:identity-changed',{detail:{mode:userVerified()?'account':'guest',email:userVerified()?currentUser.email||'':'',verified:userVerified()}}))}
 
@@ -65,7 +67,11 @@
       const action=button.dataset.accountAction;
       if(action==='create')renderForm('create');
       else if(action==='login')renderForm('login');
-      else if(action==='guest'){authority()?.setTokenProvider?.(null);remember('guest');emitIdentity();closeAndContinue()}
+      else if(action==='guest'){
+        setBusy(true);
+        try{await ensureGuestIdentity()}catch{}
+        finally{remember('guest');emitIdentity();setBusy(false);closeAndContinue()}
+      }
       else if(action==='back')renderChoice(continuation===null);
       else if(action==='close')close();
       else if(action==='profile'){close();window.LgsArenaParent?.openProfile?.()}
@@ -88,10 +94,9 @@
         let first=true;
         authModule.onAuthStateChanged(auth,async user=>{
           currentUser=user||null;authResolved=true;
-          if(userVerified(user)){
-            authority()?.setTokenProvider?.(()=>user.getIdToken());
-            remember('account');
-            await authority()?.refresh?.().catch(()=>{});
+          if(authorityEligible(user)){
+            bindAuthorityUser(user);
+            if(userVerified(user)){remember('account');await authority()?.refresh?.().catch(()=>{})}
           }else authority()?.setTokenProvider?.(null);
           emitIdentity();if(first){first=false;resolve()}
         },()=>{authResolved=true;if(first){first=false;resolve()}});
@@ -101,7 +106,16 @@
     return authPromise;
   }
 
-  function bindVerifiedUser(user){currentUser=user;authority()?.setTokenProvider?.(()=>user.getIdToken());authority()?.setTurnstileProvider?.(()=>turnstileToken)}
+  function bindAuthorityUser(user){currentUser=user;authority()?.setTokenProvider?.(()=>user.getIdToken());authority()?.setTurnstileProvider?.(()=>turnstileToken)}
+  function bindVerifiedUser(user){bindAuthorityUser(user)}
+  async function ensureGuestIdentity(){
+    await ensureFirebase();
+    if(authorityEligible())return currentUser;
+    const credential=await firebase.signInAnonymously(auth);
+    bindAuthorityUser(credential.user);
+    await credential.user.getIdToken(true);
+    return credential.user;
+  }
   function validatePassword(password){
     const rules=config.passwordPolicy||{};const errors=[];
     if(password.length<(rules.minLength||12)||password.length>(rules.maxLength||64))errors.push('Parola 12-64 karakter olmal\u0131.');
@@ -156,7 +170,9 @@
     try{
       await ensureFirebase();const {email,password}=credentials();const errors=validatePassword(password);if(errors.length)throw new Error(errors.join(' '));
       await verifyPublicTurnstile();removeTurnstile();
-      const credential=await firebase.createUserWithEmailAndPassword(auth,email,password);
+      const credential=userAnonymous()
+        ?await firebase.linkWithCredential(currentUser,firebase.EmailAuthProvider.credential(email,password))
+        :await firebase.createUserWithEmailAndPassword(auth,email,password);
       await firebase.sendEmailVerification(credential.user,{url:location.origin+location.pathname,handleCodeInApp:false});
       await firebase.signOut(auth);remember('');
       renderForm('login');setMessage('Do\u011frulama e-postas\u0131 g\u00f6nderildi. Ba\u011flant\u0131y\u0131 a\u00e7t\u0131ktan sonra giri\u015f yap. Spam klas\u00f6r\u00fcn\u00fc de kontrol et.','success');
@@ -199,7 +215,7 @@
   function openSettings(){continuation=null;renderLoading();ensureFirebase().finally(renderSettings)}
   function openAccount(){continuation=null;renderForm('login')}
 
-  window.ArenaAccountBridge=Object.freeze({VERSION,requiresFirstUse,openFirstUse,openSettings,openAccount,ready:()=>ensureFirebase(),currentUser:()=>userVerified()?currentUser:null,mode:()=>userVerified()?'account':'guest'});
+  window.ArenaAccountBridge=Object.freeze({VERSION,requiresFirstUse,openFirstUse,openSettings,openAccount,ready:()=>ensureFirebase(),ensureGuestIdentity,currentUser:()=>userVerified()?currentUser:null,authorityUser:()=>authorityEligible()?currentUser:null,mode:()=>userVerified()?'account':'guest'});
   ensureFirebase().catch(()=>{authResolved=true;emitIdentity()});
   window.dispatchEvent(new CustomEvent('arena:account-bridge-ready',{detail:{version:VERSION}}));
 })();

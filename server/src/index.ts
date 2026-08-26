@@ -3,7 +3,7 @@ import {CommerceError, commerceStatus, createRewardSession, googlePlayAccountBin
 
 type Plan = 'free' | 'premium' | 'pro' | 'pro_plus';
 type WorkerEnv=CommerceEnv&{TURNSTILE_SECRET_KEY?:string};
-interface FirebaseClaims extends JWTPayload { email_verified?: boolean }
+interface FirebaseClaims extends JWTPayload { email_verified?: boolean; firebase?: {sign_in_provider?: string} }
 interface EntitlementRow { plan: Plan; source: string; ends_at: number | null; created_at: number }
 interface QuotaRow { feature: string; used: number }
 interface StoredRequest { status: string; response_json: string | null }
@@ -38,6 +38,8 @@ export default {
       }
       const claims=await authenticate(request,env);
       const userId=claims.sub as string;
+      const rewardPath=request.method==='POST'&&url.pathname==='/v1/ads/rewarded/session'||request.method==='GET'&&/^\/v1\/ads\/rewarded\/session\/[0-9a-f-]{36}$/i.test(url.pathname);
+      if(isAnonymous(claims)&&rewardPath)await upsertUser(env.DB,userId);
       if(request.method==='POST'&&url.pathname==='/v1/session/bootstrap'){
         await requireTurnstile(request,env);
         await upsertUser(env.DB,userId);
@@ -47,8 +49,9 @@ export default {
       await requireActiveUser(env.DB,userId);
       if(request.method==='GET'&&url.pathname==='/v1/session')return json(await sessionSnapshot(env.DB,userId),200,cors);
       if(request.method==='GET'&&url.pathname==='/v1/commerce/status')return json(commerceStatus(env),200,cors);
-      if(request.method==='GET'&&url.pathname==='/v1/payments/google-play/account-binding')return json({ok:true,accountBinding:await googlePlayAccountBinding(userId),serverAt:Date.now()},200,cors);
+      if(request.method==='GET'&&url.pathname==='/v1/payments/google-play/account-binding'){requireVerifiedAccount(claims);return json({ok:true,accountBinding:await googlePlayAccountBinding(userId),serverAt:Date.now()},200,cors)}
       if(request.method==='POST'&&url.pathname==='/v1/payments/google-play/subscription/verify'){
+        requireVerifiedAccount(claims);
         const body=await readJson(request);
         const verification=await verifyGooglePlaySubscription(env.DB,env,userId,body);
         return json({...verification,session:await sessionSnapshot(env.DB,userId)},200,cors);
@@ -95,10 +98,12 @@ async function authenticate(request:Request,env:WorkerEnv):Promise<FirebaseClaim
   try{
     const verified=await jwtVerify(match[1],FIREBASE_JWKS,{algorithms:['RS256'],audience:env.FIREBASE_PROJECT_ID,issuer:`https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`,clockTolerance:5});
     const claims=verified.payload as FirebaseClaims;
-    if(!claims.sub||claims.sub.length>128||claims.email_verified!==true)throw new ApiError(403,'verified-email-required');
+    if(!claims.sub||claims.sub.length>128||!(claims.email_verified===true||isAnonymous(claims)))throw new ApiError(403,'verified-email-required');
     return claims;
   }catch(error){if(error instanceof ApiError)throw error;throw new ApiError(401,'invalid-authentication')}
 }
+function isAnonymous(claims:FirebaseClaims):boolean{return claims.firebase?.sign_in_provider==='anonymous'}
+function requireVerifiedAccount(claims:FirebaseClaims):void{if(claims.email_verified!==true||isAnonymous(claims))throw new ApiError(403,'verified-email-required')}
 
 async function requireTurnstile(request:Request,env:WorkerEnv):Promise<void>{
   if(env.TURNSTILE_ENFORCE!=='true')return;

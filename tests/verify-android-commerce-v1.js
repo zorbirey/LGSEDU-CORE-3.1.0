@@ -25,7 +25,7 @@ must(!activity.includes('addJavascriptInterface'),'legacy unsafe JS bridge must 
 must(billing.includes('setObfuscatedAccountId(accountId)'),'purchase account binding missing');
 must(rewarded.includes('setServerSideVerificationOptions'),'AdMob SSV binding missing');
 must(nativeBridge.includes("const VERSION='ARENA-ANDROID-BRIDGE-1.0.0'"),'browser/native bridge version missing');
-must(index.indexOf('arena-native-bridge-v1.js?v=20260825-06')<index.indexOf('arena-commerce-v1.js?v=20260825-06'),'native bridge must load before commerce bridge');
+must(index.indexOf('arena-native-bridge-v1.js?v=20260825-07')<index.indexOf('arena-commerce-v1.js?v=20260825-07'),'native bridge must load before commerce bridge');
 must(sw.includes("'./arena-native-bridge-v1.js'"),'native bridge missing from app shell');
 must(config.includes("packageName:'com.arenaedu.lgs2027'"),'web package binding missing');
 must(config.includes("premium:'arena_premium_monthly'")&&config.includes("pro:'arena_pro_monthly'"),'web product binding missing');

@@ -1,15 +1,17 @@
 (() => {
   'use strict';
-  const VERSION='ARENA-COMMERCE-BRIDGE-1.0.0';
+  const VERSION='ARENA-COMMERCE-BRIDGE-1.0.1';
   const config=window.ARENA_CORE_CONFIG?.commerce||{};
   const authority=()=>window.ArenaSecureAuthority||null;
   let busy=false,activeReward=null;
   function nativeBridge(){const name=config.nativeBridgeName||'ArenaNativeCommerce';return window[name]||null}
   function authenticated(){return !!window.ArenaAccountBridge?.currentUser?.()&&authority()?.authenticated?.()===true}
+  function rewardAuthenticated(){return !!window.ArenaAccountBridge?.authorityUser?.()&&authority()?.authenticated?.()===true}
   function error(code,message){const value=new Error(message||code);value.code=code;return value}
   function friendly(value){
     const code=value?.code||value?.message||'';
-    if(code.includes('authentication-required'))return 'Satın alma ve ödüllü reklam için doğrulanmış Arena hesabıyla giriş yapmalısın.';
+    if(code.includes('authentication-required'))return 'Satın alma için doğrulanmış Arena hesabıyla giriş yapmalısın.';
+    if(code.includes('guest-reward-auth-unavailable'))return 'Misafir reklam kimliği hazırlanamadı. Bağlantını kontrol edip yeniden dene.';
     if(code.includes('native-commerce-unavailable'))return 'Bu işlem yalnız Google Play üzerinden kurulan Android Arena uygulamasında kullanılabilir.';
     if(code.includes('google-play-not-configured')||code.includes('product-not-configured'))return 'Google Play ürünleri henüz yayına bağlanmadı.';
     if(code.includes('reward-provider-not-configured'))return 'Ödüllü reklam sağlayıcısı henüz yayına bağlanmadı.';
@@ -21,6 +23,11 @@
   }
   function emit(type,detail={}){window.dispatchEvent(new CustomEvent(`arena:commerce-${type}`,{detail:{...detail,version:VERSION}}))}
   function requireAccount(){if(authenticated())return;window.ArenaAccountBridge?.openFirstUse?.({});throw error('authentication-required')}
+  async function ensureRewardIdentity(){
+    if(rewardAuthenticated())return;
+    try{await window.ArenaAccountBridge?.ensureGuestIdentity?.()}catch{throw error('guest-reward-auth-unavailable')}
+    if(!rewardAuthenticated())throw error('guest-reward-auth-unavailable');
+  }
   async function status(){
     if(!authenticated())return {ok:false,authenticated:false,nativeAvailable:!!nativeBridge(),googlePlay:{configured:false},rewardedAds:{configured:false}};
     const remote=await authority().commerceStatus();return {...remote,authenticated:true,nativeAvailable:!!nativeBridge()};
@@ -54,7 +61,7 @@
     throw error('reward-not-verified');
   }
   async function watchRewarded(context='İçeriğe devam et'){
-    if(busy)throw error('commerce-busy');requireAccount();
+    if(busy)throw error('commerce-busy');await ensureRewardIdentity();
     const bridge=nativeBridge();if(!bridge||typeof bridge.showRewardedAd!=='function')throw error('native-commerce-unavailable');
     const remote=await authority().commerceStatus();if(!remote.rewardedAds?.configured)throw error('reward-provider-not-configured');
     busy=true;activeReward={cancelled:false};emit('started',{kind:'reward',context});

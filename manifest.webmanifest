@@ -5,7 +5,7 @@
   "description": "LGS 2027 için soru çözme, ünite özetleri, Premium Zeus koçluğu, Yanlışlar Defteri, denemeler, Veli Takip, lise tercih araçları ve Arena Pro yapay zekâ yol haritası.",
   "lang": "tr",
   "dir": "ltr",
-  "start_url": "./index.html?id=20260825-06",
+  "start_url": "./index.html?id=20260825-07",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
@@ -21,7 +21,7 @@
     {"src":"assets/app-icon-maskable-20260823-03-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
   ],
   "shortcuts": [
-    {"name":"Arena","short_name":"Arena","description":"Soru çözme alanını aç","url":"./index.html?id=20260825-06#solve","icons":[{"src":"assets/app-icon-20260823-03-192.png","sizes":"192x192","type":"image/png","purpose":"any"}]},
-    {"name":"Ders Özetleri","short_name":"Dersler","description":"Ünite özetlerini aç","url":"./index.html?id=20260825-06#subjects","icons":[{"src":"assets/app-icon-20260823-03-192.png","sizes":"192x192","type":"image/png","purpose":"any"}]}
+    {"name":"Arena","short_name":"Arena","description":"Soru çözme alanını aç","url":"./index.html?id=20260825-07#solve","icons":[{"src":"assets/app-icon-20260823-03-192.png","sizes":"192x192","type":"image/png","purpose":"any"}]},
+    {"name":"Ders Özetleri","short_name":"Dersler","description":"Ünite özetlerini aç","url":"./index.html?id=20260825-07#subjects","icons":[{"src":"assets/app-icon-20260823-03-192.png","sizes":"192x192","type":"image/png","purpose":"any"}]}
   ]
 }

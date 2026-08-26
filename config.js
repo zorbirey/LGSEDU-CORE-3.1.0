@@ -1,8 +1,8 @@
 (() => {
   'use strict';
-  const BUILD_ID='20260825-06',LEGAL='Türkiye Yüzyılı Maarif Modeli dikkate alınmıştır.';
+  const BUILD_ID='20260825-07',LEGAL='Türkiye Yüzyılı Maarif Modeli dikkate alınmıştır.';
   window.LGS_ARENA_CONFIG=Object.freeze({
-    schemaVersion:14,appVersion:'8.7.0-android-commerce',buildId:BUILD_ID,season:2027,appName:'LGS 2027 Arena',coverLocked:true,
+    schemaVersion:14,appVersion:'8.7.1-guest-rewards',buildId:BUILD_ID,season:2027,appName:'LGS 2027 Arena',coverLocked:true,
     coverStandard:'LGS2027-ZEUS-ARENA-COVER-2026-08-23-V630-20260824-24',coverAsset:'assets/zeus-hero-20260823-02.webp?v='+BUILD_ID,
     coverRule:'Kapak, Durum ve Zeus alanlarındaki görseller gerçek img elemanlarıyla çalışır; yerel raster arka plan yalnız yükleme fallbackidir.',
     examDate:'2027-06-13T09:30:00+03:00',nextSeason:Object.freeze({season:2028,appName:'LGS 2028 Arena',examDate:null}),dailyQuestionTarget:50,questionSeconds:90,

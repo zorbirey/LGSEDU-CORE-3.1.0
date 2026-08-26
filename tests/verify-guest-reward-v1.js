@@ -1,0 +1,14 @@
+const fs=require('fs');
+const account=fs.readFileSync('arena-account-bridge-v1.js','utf8');
+const commerce=fs.readFileSync('arena-commerce-v1.js','utf8');
+const server=fs.readFileSync('server/src/index.ts','utf8');
+const must=(value,message)=>{if(!value)throw new Error(message)};
+must(account.includes('signInAnonymously(auth)'),'anonymous Firebase identity missing');
+must(account.includes('linkWithCredential(currentUser'),'anonymous account upgrade missing');
+must(account.includes('authorityUser:()=>authorityEligible()?currentUser:null'),'reward authority user is not exposed');
+must(commerce.includes('await ensureRewardIdentity()'),'reward flow does not prepare guest identity');
+must(!/watchRewarded[\s\S]{0,160}requireAccount\(\)/.test(commerce),'reward flow still opens account gate');
+must(server.includes("sign_in_provider==='anonymous'"),'server does not recognize anonymous Firebase tokens');
+must(server.includes('if(isAnonymous(claims)&&rewardPath)await upsertUser'),'anonymous reward user is not provisioned');
+must((server.match(/requireVerifiedAccount\(claims\)/g)||[]).length>=2,'payment endpoints are not protected');
+console.log('ARENA-GUEST-REWARDED-1.0.0 verification passed');

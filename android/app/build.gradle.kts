@@ -14,7 +14,7 @@ android {
     targetSdk = 36
     versionCode = 1
     versionName = "1.0.0"
-    buildConfigField("String", "WEB_APP_URL", "\"https://zorbirey.github.io/LGSEDU-CORE-3.1.0/?source=android&id=20260825-06\"")
+    buildConfigField("String", "WEB_APP_URL", "\"https://zorbirey.github.io/LGSEDU-CORE-3.1.0/?source=android&id=20260825-07\"")
     buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"arena_premium_monthly\"")
     buildConfigField("String", "PRO_PRODUCT_ID", "\"arena_pro_monthly\"")
   }
